@@ -8,7 +8,7 @@
     "check": "npm run eslint",
     "pretest": "npm run check",
     "test": "node --harmony node_modules/jest/bin/jest.js",
-    "transpile": "babel --presets es2015 src --out-dir lib",
+    "transpile": "babel --presets es2015 src --out-dir dist",
     "prepublish": "npm run transpile"
   },
   "repository": {
@@ -41,6 +41,7 @@
     "jest": "^18.1.0"
   },
   "dependencies": {
+    "aws-sdk": "^2.39.0",
     "babel-polyfill": "^6.23.0",
     "config": "^1.25.1",
     "graphql": "^0.9.2",
