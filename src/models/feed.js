@@ -44,6 +44,7 @@ export default {
           TableName: feedTable,
           Key: { id },
         })
+        .promise()
         .then(data => data.Item);
     },
   },
