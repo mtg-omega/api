@@ -1,16 +1,15 @@
-require('babel-polyfill');
-
-/* eslint-disable import/first */
 import fs from 'fs';
+import path from 'path';
 import { GraphQLObjectType, GraphQLSchema } from 'graphql';
-/* eslint-enable import/first */
 
 const queryFields = {};
+const dirname = 'models';
+const dirpath = path.join(__dirname, dirname);
 
-fs.readdirSync(__dirname)
+fs.readdirSync(dirpath)
   .filter(filename => filename.substr(-3) === '.js' && filename !== 'index.js')
   .forEach((filename) => {
-    const tmpFields = require(`./models/${filename}`); // eslint-disable-line global-require, import/no-dynamic-require
+    const tmpFields = require(`./${dirname}/${filename}`); // eslint-disable-line global-require, import/no-dynamic-require
 
     Object.assign(queryFields, tmpFields.default);
   });

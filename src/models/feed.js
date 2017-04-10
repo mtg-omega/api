@@ -30,7 +30,9 @@ export const Feed = new GraphQLObjectType({
 });
 
 export default {
-  feeds: {},
+  feeds: {
+    type: new GraphQLList(Feed),
+  },
   feed: {
     type: Feed,
     args: {

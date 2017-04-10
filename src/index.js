@@ -20,7 +20,8 @@ function createResponse(statusCode, body) {
   };
 }
 
-export async function handler(event, context, done) { // eslint-ignore-line import/prefer-default-export
+// eslint-disable-next-line import/prefer-default-export
+export async function handler(event, context, done) {
   log.debug(event);
 
   const body = JSON.parse(event.body);
