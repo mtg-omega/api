@@ -73,5 +73,14 @@ describe('Feed', () => {
         expect(feed).toBeDefined();
         expect(feed.title).toBe(title);
       }));
+
+    it('should not find a feed', () => graphql(Schema, `{ feed(id: "${id}a") { title } }`)
+      .then(({ data, errors }) => {
+        expect(data).toBeDefined();
+        expect(errors).not.toBeDefined();
+
+        const { feed } = data;
+        expect(feed).toBeNull();
+      }));
   });
 });
