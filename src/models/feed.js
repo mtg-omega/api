@@ -2,7 +2,9 @@ import {
   GraphQLObjectType,
   GraphQLList,
   GraphQLString,
+  GraphQLNonNull,
 } from 'graphql';
+import ulid from 'ulid';
 import config from 'config';
 
 import { docClient } from '../aws';
@@ -29,7 +31,7 @@ export const Feed = new GraphQLObjectType({
   }),
 });
 
-export default {
+export const queryFields = {
   feeds: {
     type: new GraphQLList(Feed),
     resolve() {
@@ -55,6 +57,39 @@ export default {
         })
         .promise()
         .then(data => data.Item);
+    },
+  },
+};
+
+export const mutations = {
+  createFeed: {
+    type: Feed,
+    description: 'Create a new feed',
+    args: {
+      title: { type: new GraphQLNonNull(GraphQLString) },
+      description: { type: GraphQLString },
+      link: { type: GraphQLString },
+      url: { type: GraphQLString },
+      mostRecentUpdateAt: { type: GraphQLString },
+      publishedAt: { type: GraphQLString },
+      author: { type: GraphQLString },
+      language: { type: GraphQLString },
+      image: { type: GraphQLString },
+      favicon: { type: GraphQLString },
+      copyright: { type: GraphQLString },
+      generator: { type: GraphQLString },
+      categories: { type: GraphQLString },
+    },
+    resolve(_, feed) {
+      feed.id = ulid(); // eslint-disable-line no-param-reassign
+
+      return docClient
+        .put({
+          TableName: feedTable,
+          Item: feed,
+        })
+        .promise()
+        .then(() => feed);
     },
   },
 };

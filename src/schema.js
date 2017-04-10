@@ -3,6 +3,8 @@ import path from 'path';
 import { GraphQLObjectType, GraphQLSchema } from 'graphql';
 
 const queryFields = {};
+const mutations = {};
+
 const dirname = 'models';
 const dirpath = path.join(__dirname, dirname);
 
@@ -11,7 +13,8 @@ fs.readdirSync(dirpath)
   .forEach((filename) => {
     const tmpFields = require(`./${dirname}/${filename}`); // eslint-disable-line global-require, import/no-dynamic-require
 
-    Object.assign(queryFields, tmpFields.default);
+    Object.assign(queryFields, tmpFields.queryFields || {});
+    Object.assign(mutations, tmpFields.mutations || {});
   });
 
 const Query = new GraphQLObjectType({
@@ -20,8 +23,15 @@ const Query = new GraphQLObjectType({
   fields: queryFields,
 });
 
+const Mutation = new GraphQLObjectType({
+  name: 'MtgOmegaMutation',
+  description: 'The mutations for the Mth Omega schema',
+  fields: mutations,
+});
+
 const Schema = new GraphQLSchema({
   query: Query,
+  mutation: Mutation,
 });
 
 export default Schema;

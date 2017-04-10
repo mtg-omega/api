@@ -95,4 +95,29 @@ describe('Feed', () => {
         expect(feed.title).toBe(title);
       }));
   });
+
+  describe('Mutations', () => {
+    const titleNew = 'title new';
+
+    const query1 = 'mutation ($title: String!) { createFeed(title: $title) { id title } }';
+    it('should create a feed', () => graphql(Schema, query1, null, null, {
+      title: titleNew,
+    })
+      .then(({ data, errors }) => {
+        expect(data).toBeDefined();
+        expect(errors).not.toBeDefined();
+
+        const { createFeed: feed } = data;
+        expect(feed.id).toBeDefined();
+        expect(feed.title).toBe(titleNew);
+
+        return feed.id;
+      })
+      .then(id => docClient.delete({
+        TableName: feedTable,
+        Key: {
+          id,
+        },
+      }).promise()));
+  });
 });
