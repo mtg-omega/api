@@ -17,7 +17,7 @@ describe('Feed', () => {
   });
 
   describe('Model', () => {
-    it('should have the "feed" type', () => graphql(Schema, '{ __type(name: "feed") { name fields { name } } }')
+    it('should have the "Feed" type', () => graphql(Schema, '{ __type(name: "Feed") { name fields { name } } }')
       .then(({ data, errors }) => {
         expect(errors).not.toBeDefined();
         expect(data).toBeDefined();
@@ -25,7 +25,7 @@ describe('Feed', () => {
         const type = data.__type; // eslint-disable-line no-underscore-dangle
 
         expect(type).toBeDefined();
-        expect(type.name).toBe('feed');
+        expect(type.name).toBe('Feed');
         expect(type.fields).toHaveLength(14);
 
         expect(type.fields).toContainEqual({ name: 'id' });
@@ -42,6 +42,17 @@ describe('Feed', () => {
         expect(type.fields).toContainEqual({ name: 'copyright' });
         expect(type.fields).toContainEqual({ name: 'generator' });
         expect(type.fields).toContainEqual({ name: 'categories' });
+      }));
+
+    it('should have the "FeedInput" type', () => graphql(Schema, '{ __type(name: "FeedInput") { name fields { name } } }')
+      .then(({ data, errors }) => {
+        expect(errors).not.toBeDefined();
+        expect(data).toBeDefined();
+
+        const type = data.__type; // eslint-disable-line no-underscore-dangle
+
+        expect(type).toBeDefined();
+        expect(type.name).toBe('FeedInput');
       }));
   });
 
@@ -66,8 +77,8 @@ describe('Feed', () => {
 
     it('should find a feed', () => graphql(Schema, `{ feed(id: "${id}") { title } }`)
       .then(({ data, errors }) => {
-        expect(data).toBeDefined();
         expect(errors).not.toBeDefined();
+        expect(data).toBeDefined();
 
         const { feed } = data;
         expect(feed).toBeDefined();
@@ -76,8 +87,8 @@ describe('Feed', () => {
 
     it('should not find a feed', () => graphql(Schema, `{ feed(id: "${id}a") { title } }`)
       .then(({ data, errors }) => {
-        expect(data).toBeDefined();
         expect(errors).not.toBeDefined();
+        expect(data).toBeDefined();
 
         const { feed } = data;
         expect(feed).toBeNull();
@@ -85,8 +96,8 @@ describe('Feed', () => {
 
     it('should find all the feeds (1)', () => graphql(Schema, '{ feeds { title } }')
       .then(({ data, errors }) => {
-        expect(data).toBeDefined();
         expect(errors).not.toBeDefined();
+        expect(data).toBeDefined();
 
         const { feeds } = data;
         expect(feeds).toHaveLength(1);
@@ -99,13 +110,15 @@ describe('Feed', () => {
   describe('Mutations', () => {
     const titleNew = 'title new';
 
-    const query1 = 'mutation ($title: String!) { createFeed(title: $title) { id title } }';
+    const query1 = 'mutation ($feed: FeedInput!) { createFeed(feed: $feed) { id title } }';
     it('should create a feed', () => graphql(Schema, query1, null, null, {
-      title: titleNew,
+      feed: {
+        title: titleNew,
+      },
     })
       .then(({ data, errors }) => {
-        expect(data).toBeDefined();
         expect(errors).not.toBeDefined();
+        expect(data).toBeDefined();
 
         const { createFeed: feed } = data;
         expect(feed.id).toBeDefined();

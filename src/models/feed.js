@@ -1,5 +1,6 @@
 import {
   GraphQLObjectType,
+  GraphQLInputObjectType,
   GraphQLList,
   GraphQLString,
   GraphQLNonNull,
@@ -9,26 +10,42 @@ import config from 'config';
 
 import { docClient } from '../aws';
 
+const feedFieldsId = {
+  id: { type: new GraphQLNonNull(GraphQLString) },
+};
+const feedFields = {
+  title: { type: new GraphQLNonNull(GraphQLString) },
+  description: { type: GraphQLString },
+  link: { type: GraphQLString }, // url
+  url: { type: GraphQLString }, // url
+  mostRecentUpdateAt: { type: GraphQLString }, // date
+  publishedAt: { type: GraphQLString }, // date
+  author: { type: GraphQLString },
+  language: { type: GraphQLString },
+  image: { type: GraphQLString }, // url
+  favicon: { type: GraphQLString }, // url
+  copyright: { type: GraphQLString },
+  generator: { type: GraphQLString },
+  categories: { type: new GraphQLList(GraphQLString) }, // string[]
+};
+
 export const feedTable = `${config.get('dynamo.tables.feed')}-${config.get('dynamo.environment')}`;
+
 export const Feed = new GraphQLObjectType({
-  name: 'feed',
+  name: 'Feed',
   description: 'A feed with many articles',
-  fields: () => ({
-    id: { type: GraphQLString },
-    title: { type: GraphQLString },
-    description: { type: GraphQLString },
-    link: { type: GraphQLString }, // url
-    url: { type: GraphQLString }, // url
-    mostRecentUpdateAt: { type: GraphQLString }, // date
-    publishedAt: { type: GraphQLString }, // date
-    author: { type: GraphQLString },
-    language: { type: GraphQLString },
-    image: { type: GraphQLString }, // url
-    favicon: { type: GraphQLString }, // url
-    copyright: { type: GraphQLString },
-    generator: { type: GraphQLString },
-    categories: { type: new GraphQLList(GraphQLString) }, // string[]
-  }),
+  fields: {
+    ...feedFieldsId,
+    ...feedFields,
+  },
+});
+
+export const FeedInput = new GraphQLInputObjectType({
+  name: 'FeedInput',
+  description: 'The input type for feeds',
+  fields: {
+    ...feedFields,
+  },
 });
 
 export const queryFields = {
@@ -66,21 +83,9 @@ export const mutations = {
     type: Feed,
     description: 'Create a new feed',
     args: {
-      title: { type: new GraphQLNonNull(GraphQLString) },
-      description: { type: GraphQLString },
-      link: { type: GraphQLString },
-      url: { type: GraphQLString },
-      mostRecentUpdateAt: { type: GraphQLString },
-      publishedAt: { type: GraphQLString },
-      author: { type: GraphQLString },
-      language: { type: GraphQLString },
-      image: { type: GraphQLString },
-      favicon: { type: GraphQLString },
-      copyright: { type: GraphQLString },
-      generator: { type: GraphQLString },
-      categories: { type: GraphQLString },
+      feed: { type: FeedInput },
     },
-    resolve(_, feed) {
+    resolve(_, { feed }) {
       feed.id = ulid(); // eslint-disable-line no-param-reassign
 
       return docClient
