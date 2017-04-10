@@ -82,5 +82,17 @@ describe('Feed', () => {
         const { feed } = data;
         expect(feed).toBeNull();
       }));
+
+    it('should find all the feeds (1)', () => graphql(Schema, '{ feeds { title } }')
+      .then(({ data, errors }) => {
+        expect(data).toBeDefined();
+        expect(errors).not.toBeDefined();
+
+        const { feeds } = data;
+        expect(feeds).toHaveLength(1);
+
+        const [feed] = feeds;
+        expect(feed.title).toBe(title);
+      }));
   });
 });

@@ -32,7 +32,16 @@ export const Feed = new GraphQLObjectType({
 export default {
   feeds: {
     type: new GraphQLList(Feed),
+    resolve() {
+      return docClient
+        .scan({
+          TableName: feedTable,
+        })
+        .promise()
+        .then(data => data.Items);
+    },
   },
+
   feed: {
     type: Feed,
     args: {
