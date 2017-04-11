@@ -8,6 +8,9 @@ import { docClient } from '../../src/aws';
 import { feedTable, Feed } from '../../src/models/feed';
 
 describe('Feed', () => {
+  const id = 'abcdefg-abcd-abcd-acd-abcdefg';
+  const title = 'title-1';
+
   it('should have a valid table', () => {
     expect(feedTable).toBe('mtg-omega-feed-test');
   });
@@ -44,7 +47,7 @@ describe('Feed', () => {
         expect(type.fields).toContainEqual({ name: 'categories' });
       }));
 
-    it('should have the "FeedInput" type', () => graphql(Schema, '{ __type(name: "FeedInput") { name fields { name } } }')
+    it('should have the "FeedInput" type', () => graphql(Schema, '{ __type(name: "AddFeedInput") { name fields { name } } }')
       .then(({ data, errors }) => {
         expect(errors).not.toBeDefined();
         expect(data).toBeDefined();
@@ -52,14 +55,22 @@ describe('Feed', () => {
         const type = data.__type; // eslint-disable-line no-underscore-dangle
 
         expect(type).toBeDefined();
-        expect(type.name).toBe('FeedInput');
+        expect(type.name).toBe('AddFeedInput');
+      }));
+
+    it('should have the "FeedInput" type', () => graphql(Schema, '{ __type(name: "EditFeedInput") { name fields { name } } }')
+      .then(({ data, errors }) => {
+        expect(errors).not.toBeDefined();
+        expect(data).toBeDefined();
+
+        const type = data.__type; // eslint-disable-line no-underscore-dangle
+
+        expect(type).toBeDefined();
+        expect(type.name).toBe('EditFeedInput');
       }));
   });
 
   describe('Instance', () => {
-    const id = 'abcdefg-abcd-abcd-acd-abcdefg';
-    const title = 'title-1';
-
     beforeEach(() => docClient.put({
       TableName: feedTable,
       Item: {
@@ -110,7 +121,7 @@ describe('Feed', () => {
   describe('Mutations', () => {
     const titleNew = 'title new';
 
-    const query1 = 'mutation ($feed: FeedInput!) { createFeed(feed: $feed) { id title } }';
+    const query1 = 'mutation ($feed: AddFeedInput!) { addFeed(feed: $feed) { id title } }';
     it('should create a feed', () => graphql(Schema, query1, null, null, {
       feed: {
         title: titleNew,
@@ -120,17 +131,33 @@ describe('Feed', () => {
         expect(errors).not.toBeDefined();
         expect(data).toBeDefined();
 
-        const { createFeed: feed } = data;
+        const { addFeed: feed } = data;
         expect(feed.id).toBeDefined();
         expect(feed.title).toBe(titleNew);
 
         return feed.id;
       })
-      .then(id => docClient.delete({
+      .then(feedId => docClient.delete({
         TableName: feedTable,
         Key: {
-          id,
+          id: feedId,
         },
       }).promise()));
+
+    const query2 = 'mutation ($feed: EditFeedInput!) { editFeed(feed: $feed) { id title } }';
+    it('should edit an existing feed', () => graphql(Schema, query2, null, null, {
+      feed: {
+        id,
+        title: titleNew,
+      },
+    })
+      .then(({ data, errors }) => {
+        expect(errors).not.toBeDefined();
+        expect(data).toBeDefined();
+
+        const { editFeed: feed } = data;
+        expect(feed.id).toBe(id);
+        expect(feed.title).toBe(titleNew);
+      }));
   });
 });
