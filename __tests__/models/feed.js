@@ -4,15 +4,15 @@ import {
 } from 'graphql';
 
 import Schema from '../../src/schema';
-import { docClient } from '../../src/aws';
-import { feedTable, Feed } from '../../src/models/feed';
+import { Feed } from '../../src/graphs/feed';
+import { table, put, destroy } from '../../src/dynamo/feed';
 
 describe('Feed', () => {
   const id = 'abcdefg-abcd-abcd-acd-abcdefg';
   const title = 'title-1';
 
   it('should have a valid table', () => {
-    expect(feedTable).toBe('mtg-omega-feed-test');
+    expect(table).toBe('mtg-omega-feed-test');
   });
 
   it('should be a model', () => {
@@ -71,20 +71,8 @@ describe('Feed', () => {
   });
 
   describe('Instance', () => {
-    beforeEach(() => docClient.put({
-      TableName: feedTable,
-      Item: {
-        id,
-        title,
-      },
-    }).promise());
-
-    afterEach(() => docClient.delete({
-      TableName: feedTable,
-      Key: {
-        id,
-      },
-    }).promise());
+    beforeEach(() => put({ id, title }));
+    afterEach(() => destroy(id));
 
     it('should find a feed', () => graphql(Schema, `{ feed(id: "${id}") { title } }`)
       .then(({ data, errors }) => {
@@ -137,12 +125,7 @@ describe('Feed', () => {
 
         return feed.id;
       })
-      .then(feedId => docClient.delete({
-        TableName: feedTable,
-        Key: {
-          id: feedId,
-        },
-      }).promise()));
+      .then(feedId => destroy(feedId)));
 
     const query2 = 'mutation ($feed: EditFeedInput!) { editFeed(feed: $feed) { id title } }';
     it('should edit an existing feed', () => graphql(Schema, query2, null, null, {

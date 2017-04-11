@@ -6,9 +6,8 @@ import {
   GraphQLNonNull,
 } from 'graphql';
 import ulid from 'ulid';
-import config from 'config';
 
-import { docClient } from '../aws';
+import { get, scan, put, update } from '../dynamo/feed';
 
 const feedFieldsId = {
   id: { type: new GraphQLNonNull(GraphQLString) },
@@ -34,7 +33,6 @@ const feedFields = {
   categories: { type: new GraphQLList(GraphQLString) }, // string[]
 };
 
-export const feedTable = `${config.get('dynamo.tables.feed')}-${config.get('dynamo.environment')}`;
 
 export const Feed = new GraphQLObjectType({
   name: 'Feed',
@@ -69,12 +67,7 @@ export const queryFields = {
   feeds: {
     type: new GraphQLList(Feed),
     resolve() {
-      return docClient
-        .scan({
-          TableName: feedTable,
-        })
-        .promise()
-        .then(data => data.Items);
+      return scan();
     },
   },
 
@@ -84,13 +77,7 @@ export const queryFields = {
       id: { type: GraphQLString },
     },
     resolve(_, { id }) {
-      return docClient
-        .get({
-          TableName: feedTable,
-          Key: { id },
-        })
-        .promise()
-        .then(data => data.Item);
+      return get(id);
     },
   },
 };
@@ -105,13 +92,7 @@ export const mutations = {
     resolve(_, { feed }) {
       feed.id = ulid(); // eslint-disable-line no-param-reassign
 
-      return docClient
-        .put({
-          TableName: feedTable,
-          Item: feed,
-        })
-        .promise()
-        .then(() => feed);
+      return put(feed);
     },
   },
 
@@ -125,31 +106,8 @@ export const mutations = {
       const id = feed.id;
 
       delete feed.id; // eslint-disable-line no-param-reassign
-      const ExpressionAttributeValues = {};
 
-      const updates = Object.keys(feed)
-        .map((key) => {
-          ExpressionAttributeValues[`:${key}`] = feed[key];
-
-          return `${key} = :${key}`;
-        });
-      const UpdateExpression = `SET ${updates.join(', ')}`;
-
-      return docClient
-        .update({
-          TableName: feedTable,
-          Key: { id },
-          UpdateExpression,
-          ExpressionAttributeValues,
-        })
-        .promise()
-        .then(() => docClient
-          .get({
-            TableName: feedTable,
-            Key: { id },
-          })
-          .promise())
-        .then(data => data.Item);
+      return update(id, feed);
     },
   },
 };

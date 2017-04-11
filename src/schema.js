@@ -5,7 +5,7 @@ import { GraphQLObjectType, GraphQLSchema } from 'graphql';
 const queryFields = {};
 const mutations = {};
 
-const dirname = 'models';
+const dirname = 'graphs';
 const dirpath = path.join(__dirname, dirname);
 
 fs.readdirSync(dirpath)
