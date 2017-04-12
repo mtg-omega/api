@@ -33,7 +33,6 @@ const feedFields = {
   categories: { type: new GraphQLList(GraphQLString) }, // string[]
 };
 
-
 export const Feed = new GraphQLObjectType({
   name: 'Feed',
   description: 'A feed with many articles',
