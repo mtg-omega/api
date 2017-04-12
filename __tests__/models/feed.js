@@ -110,43 +110,43 @@ describe('Feed', () => {
         const [feed] = feeds;
         expect(feed.title).toBe(title);
       }));
-  });
 
-  describe('Mutations', () => {
-    const titleNew = 'title new';
+    describe('Mutations', () => {
+      const titleNew = 'title new';
 
-    const query1 = 'mutation ($feed: AddFeedInput!) { addFeed(feed: $feed) { id title } }';
-    it('should create a feed', () => graphql(Schema, query1, null, null, {
-      feed: {
-        title: titleNew,
-      },
-    })
-      .then(({ data, errors }) => {
-        expect(errors).not.toBeDefined();
-        expect(data).toBeDefined();
-
-        const { addFeed: feed } = data;
-        expect(feed.id).toBeDefined();
-        expect(feed.title).toBe(titleNew);
-
-        return feed.id;
+      const query1 = 'mutation ($feed: AddFeedInput!) { addFeed(feed: $feed) { id title } }';
+      it('should create a feed', () => graphql(Schema, query1, null, null, {
+        feed: {
+          title: titleNew,
+        },
       })
-      .then(feedId => destroy(feedId)));
+        .then(({ data, errors }) => {
+          expect(errors).not.toBeDefined();
+          expect(data).toBeDefined();
 
-    const query2 = 'mutation ($feed: EditFeedInput!) { editFeed(feed: $feed) { id title } }';
-    it('should edit an existing feed', () => graphql(Schema, query2, null, null, {
-      feed: {
-        id,
-        title: titleNew,
-      },
-    })
-      .then(({ data, errors }) => {
-        expect(errors).not.toBeDefined();
-        expect(data).toBeDefined();
+          const { addFeed: feed } = data;
+          expect(feed.id).toBeDefined();
+          expect(feed.title).toBe(titleNew);
 
-        const { editFeed: feed } = data;
-        expect(feed.id).toBe(id);
-        expect(feed.title).toBe(titleNew);
-      }));
+          return feed.id;
+        })
+        .then(feedId => destroy(feedId)));
+
+      const query2 = 'mutation ($feed: EditFeedInput!) { editFeed(feed: $feed) { id title } }';
+      it('should edit an existing feed', () => graphql(Schema, query2, null, null, {
+        feed: {
+          id,
+          title: titleNew,
+        },
+      })
+        .then(({ data, errors }) => {
+          expect(errors).not.toBeDefined();
+          expect(data).toBeDefined();
+
+          const { editFeed: feed } = data;
+          expect(feed.id).toBe(id);
+          expect(feed.title).toBe(titleNew);
+        }));
+    });
   });
 });
