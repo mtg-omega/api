@@ -1,10 +1,11 @@
 import {
   graphql,
   GraphQLObjectType,
+  GraphQLInputObjectType,
 } from 'graphql';
 
 import Schema from '../../src/schema';
-import { Feed } from '../../src/graphs/feed';
+import { Feed, AddFeedInput, EditFeedInput } from '../../src/graphs/feed';
 import { table, put, destroy } from '../../src/dynamo/feed';
 
 describe('Feed', () => {
@@ -17,6 +18,11 @@ describe('Feed', () => {
 
   it('should be a model', () => {
     expect(Feed).toBeInstanceOf(GraphQLObjectType);
+  });
+
+  it('should be input models', () => {
+    expect(AddFeedInput).toBeInstanceOf(GraphQLInputObjectType);
+    expect(EditFeedInput).toBeInstanceOf(GraphQLInputObjectType);
   });
 
   describe('Model', () => {
