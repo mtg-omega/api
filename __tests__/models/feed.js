@@ -7,6 +7,7 @@ import {
 import Schema from '../../src/schema';
 import { Feed, AddFeedInput, EditFeedInput } from '../../src/graphs/feed';
 import { table, put, destroy } from '../../src/dynamo/feed';
+import { put as putArticle, destroy as destroyArticle } from '../../src/dynamo/article';
 
 describe('Feed', () => {
   const id = 'abcdefg-abcd-abcd-acd-abcdefg';
@@ -35,7 +36,7 @@ describe('Feed', () => {
 
         expect(type).toBeDefined();
         expect(type.name).toBe('Feed');
-        expect(type.fields).toHaveLength(14);
+        expect(type.fields).toHaveLength(15);
 
         expect(type.fields).toContainEqual({ name: 'id' });
         expect(type.fields).toContainEqual({ name: 'title' });
@@ -51,6 +52,7 @@ describe('Feed', () => {
         expect(type.fields).toContainEqual({ name: 'copyright' });
         expect(type.fields).toContainEqual({ name: 'generator' });
         expect(type.fields).toContainEqual({ name: 'categories' });
+        expect(type.fields).toContainEqual({ name: 'articles' });
       }));
 
     it('should have the "FeedInput" type', () => graphql(Schema, '{ __type(name: "AddFeedInput") { name fields { name } } }')
@@ -110,6 +112,34 @@ describe('Feed', () => {
         const [feed] = feeds;
         expect(feed.title).toBe(title);
       }));
+
+    describe('Articles', () => {
+      const articleId = 'qwerty';
+      const articleTitle = 'article';
+
+      beforeEach(() => putArticle({
+        id: articleId,
+        feedId: id,
+        title: articleTitle,
+      }));
+      afterEach(() => destroyArticle(articleId));
+
+      it('should find the articles of a feed', () => graphql(Schema, `{ feed(id: "${id}") { articles { id title } } }`)
+        .then(({ data, errors }) => {
+          expect(errors).not.toBeDefined();
+          expect(data).toBeDefined();
+
+          const { feed } = data;
+          expect(feed).toBeDefined();
+          expect(feed.articles).toBeDefined();
+
+          const { articles } = feed;
+          expect(articles).toHaveLength(1);
+
+          const [article] = articles;
+          expect(article.title).toBe(articleTitle);
+        }));
+    });
 
     describe('Mutations', () => {
       const titleNew = 'title new';

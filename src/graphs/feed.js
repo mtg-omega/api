@@ -8,6 +8,8 @@ import {
 import ulid from 'ulid';
 
 import { get, scan, put, update } from '../dynamo/feed';
+import { getByFeed } from '../dynamo/article';
+import { Article } from './article';
 
 const feedFieldsId = {
   id: { type: new GraphQLNonNull(GraphQLString) },
@@ -32,6 +34,14 @@ const feedFields = {
   generator: { type: GraphQLString },
   categories: { type: new GraphQLList(GraphQLString) }, // string[]
 };
+const feedFieldsArticles = {
+  articles: {
+    type: new GraphQLList(Article),
+    resolve({ id }) {
+      return getByFeed(id);
+    },
+  },
+};
 
 export const Feed = new GraphQLObjectType({
   name: 'Feed',
@@ -40,6 +50,7 @@ export const Feed = new GraphQLObjectType({
     ...feedFieldsId,
     ...feedFieldsTitleNonNull,
     ...feedFields,
+    ...feedFieldsArticles,
   },
 });
 

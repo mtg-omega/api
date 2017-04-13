@@ -16,9 +16,13 @@ export function get(id) {
 
 export function getByFeed(feedId) {
   return docClient
-    .get({
+    .query({
       TableName: table,
-      Key: { feedId },
+      IndexName: 'feedId-id-index',
+      KeyConditionExpression: 'feedId = :feedId',
+      ExpressionAttributeValues: {
+        ':feedId': feedId,
+      },
     })
     .promise()
     .then(data => data.Items);
