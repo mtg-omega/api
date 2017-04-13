@@ -26,8 +26,11 @@ export async function handler(event, context, done) {
 
   const body = JSON.parse(event.body);
 
+  const query = body.query;
+  const variables = body.variables;
+
   try {
-    const result = await graphql(Schema, body.query);
+    const result = await graphql(Schema, query, null, null, variables);
 
     log.info('Finished successfully');
 
